@@ -25,7 +25,134 @@ describe('POST /recipes', () => {
     MongoClient.connect.restore();
   });
 
-  describe('Casos de falha', () => {});
+  describe('Casos de falha', () => {
+    let token;
+
+    before(async () => {
+      await chai.request(server).post('/users').send({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789',
+      });
+
+      token = await chai
+        .request(server)
+        .post('/login')
+        .send({
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
+          password: '123456789',
+        })
+        .then(({ body }) => body.token);
+    });
+
+    after(async () => {
+      db.collection('users').deleteMany({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      })
+    })
+
+    describe('Quando não é passado o campo "name"', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .post('/recipes')
+        .set({ authorization: token })
+        .send({
+          ingredients: 'Frango, sazon',
+          preparation: '10 minutos no forno',
+        });
+      });
+
+      it('retorna o código de status 400', () => {
+        expect(response).to.have.status(400);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "Invalid entries. Try again."', () => {
+        expect(response.body.message).to.be.equal(
+          'Invalid entries. Try again.'
+        );
+      });
+    });
+
+    describe('Quando não é passado o campo "ingredients"', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .post('/recipes')
+        .set({ authorization: token })
+        .send({
+          name: 'Frango',
+          preparation: '10 minutos no forno',
+        });
+      });
+
+      it('retorna o código de status 400', () => {
+        expect(response).to.have.status(400);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "Invalid entries. Try again."', () => {
+        expect(response.body.message).to.be.equal(
+          'Invalid entries. Try again.'
+        );
+      });
+    });
+
+    describe('Quando não é passado o campo "preparation"', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .post('/recipes')
+        .set({ authorization: token })
+        .send({
+          name: 'Frango',
+          ingredients: 'Frango, sazon',
+        });
+      });
+
+      it('retorna o código de status 400', () => {
+        expect(response).to.have.status(400);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "Invalid entries. Try again."', () => {
+        expect(response.body.message).to.be.equal(
+          'Invalid entries. Try again.'
+        );
+      });
+    });
+  });
 
   describe('Casos de sucesso', () => {});
 });
