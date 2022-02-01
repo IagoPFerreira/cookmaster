@@ -192,6 +192,54 @@ describe('POST /users', () => {
   });
 
   describe('Casos de sucesso', () => {
-    
+    describe('É possivel cadastrar um usuário', () => {
+      let response;
+
+      before(async () => {
+        response = await chai.request(server)
+          .post('/users')
+          .send({
+            name: 'Testador Testante',
+            email: 'testatortestante@teste.com',
+            password: '123456789'
+          });
+      });
+
+      after(async () => {
+        db.collection('users').deleteMany({
+          name: 'Testador Testante',
+          email: 'testatortestante@teste.com',
+          password: '123456789'
+        });
+      });
+
+      it('retorna o código de status 201', () => {
+        expect(response).to.have.status(201);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "user"', () => {
+        expect(response.body).to.have.property('user');
+      });
+
+      it('a propriedade "user" é um objeto', () => {
+        expect(response.body.user).to.be.a('object');
+      });
+
+      it('a propriedade "user" ter as informações do usuário', () => {
+        expect(response.body.user.name).to.be.equal('Testador Testante');
+        expect(response.body.user.email).to.be.equal('testatortestante@teste.com');
+        expect(response.body.user).to.have.property('_id');
+        expect(response.body.user).to.have.property('role');
+      });
+
+      it('a propriedade "role" ter o valor user', () => {
+        expect(response.body.user).to.have.property('role');
+        expect(response.body.user.role).to.be.equal('user');
+      });
+    });
   });
 });
