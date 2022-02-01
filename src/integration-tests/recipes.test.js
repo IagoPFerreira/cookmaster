@@ -189,7 +189,7 @@ describe('POST /recipes', () => {
       })
     })
 
-    describe('Quando é feito o cadastro', () => {
+    describe('Quando é feito o cadastro da receita', () => {
       let response;
 
       before(async () => {
@@ -225,4 +225,24 @@ describe('POST /recipes', () => {
 
     });
   });
+});
+
+describe('GET /recipes', () => {
+  let db;
+
+  before(async () => {
+    const connectionMock = await getConnection();
+
+    db = connectionMock.db('Cookmaster');
+
+    sinon.stub(MongoClient, 'connect').resolves(connectionMock);
+  });
+
+  after(async () => {
+    MongoClient.connect.restore();
+  });
+
+  describe('Casos de falha', () => {});
+
+  describe('Casos de sucesso', () => {});
 });
