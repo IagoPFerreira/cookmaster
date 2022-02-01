@@ -154,5 +154,75 @@ describe('POST /recipes', () => {
     });
   });
 
-  describe('Casos de sucesso', () => {});
+  describe('Casos de sucesso', () => {
+    let token;
+
+    before(async () => {
+      await chai.request(server).post('/users').send({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789',
+      });
+
+      token = await chai
+        .request(server)
+        .post('/login')
+        .send({
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
+          password: '123456789',
+        })
+        .then(({ body }) => body.token);
+    });
+
+    after(async () => {
+      db.collection('users').deleteMany({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      })
+
+      db.collection('recipes').deleteMany({
+        name: 'Frango' ,
+        ingredients: 'Frango, sazon',
+        preparation: '10 minutos no forno',
+      })
+    })
+
+    describe('Quando é feito o cadastro', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+          .request(server)
+          .post('/recipes')
+          .set({ authorization: token })
+          .send({
+            name: 'Frango' ,
+            ingredients: 'Frango, sazon',
+            preparation: '10 minutos no forno',
+          });
+      });
+
+      it('retorna o código de status 201', () => {
+        expect(response).to.have.status(201);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('a propriedade "recipe" é um objeto', () => {
+        expect(response.body.recipe).to.be.a('object')
+      });
+
+      it('a propriedade "recipe" ter as informações da receita', () => {
+        expect(response.body.recipe.name).to.be.equal('Frango');
+        expect(response.body.recipe.ingredients).to.be.equal('Frango, sazon');
+        expect(response.body.recipe.preparation).to.be.equal('10 minutos no forno');
+        expect(response.body.recipe).to.have.property('_id');
+      });
+
+    });
+  });
 });
