@@ -160,5 +160,48 @@ describe('POST /login', () => {
     })
   });
 
-  describe('Casos de sucesso', () => {});
+  describe('Casos de sucesso', () => {
+    before(async () => {
+      await chai.request(server)
+      .post('/users')
+      .send({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      });
+    });
+
+    after(async () => {
+      db.collection('users').deleteMany({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      })
+    })
+
+    describe('Quando é feito o login', () => {
+      let response;
+
+      before(async () => {
+        response = await chai.request(server)
+          .post('/login')
+          .send({
+            email: 'yarpenzigrin@anao.com',
+            password: '123456789'
+          });
+      });
+
+      it('retorna o código de status 200', () => {
+        expect(response).to.have.status(200);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('token');
+      });
+    });
+  });
 });
