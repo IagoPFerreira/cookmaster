@@ -422,7 +422,93 @@ describe('GET /recipes/:id', () => {
     MongoClient.connect.restore();
   });
 
-  describe('Casos de falha', () => {});
+  describe('Casos de falha', () => {
+    let token;
+
+    before(async () => {
+      await chai.request(server).post('/users').send({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789',
+      });
+
+      token = await chai
+        .request(server)
+        .post('/login')
+        .send({
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
+          password: '123456789',
+        })
+        .then(({ body }) => body.token);
+    });
+
+    after(async () => {
+      db.collection('users').deleteMany({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      })
+    })
+
+    describe('Quando não existem receitas cadastradas com esse id', () => {
+      let response;
+      const id = '61faacccde0dc470d098e744'
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .get(`/recipes/${id}`);
+      });
+
+      it('retorna o código de status 404', () => {
+        expect(response).to.have.status(404);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "recipe not found"', () => {
+        expect(response.body.message).to.be.equal(
+          'recipe not found'
+        );
+      });
+    });
+
+    describe('Quando o id não é um id válido', () => {
+      let response;
+      const id = '61faacccde0dc470d098e74*'
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .get(`/recipes/${id}`);
+      });
+
+      it('retorna o código de status 404', () => {
+        expect(response).to.have.status(404);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "invalid id"', () => {
+        expect(response.body.message).to.be.equal(
+          'invalid id'
+        );
+      });
+    });
+  });
 
   describe('Casos de sucesso', () => {});
 });
