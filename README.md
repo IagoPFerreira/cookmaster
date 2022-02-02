@@ -4,6 +4,10 @@ Esse projeto foi desenvolvido como projeto avaliativo no módulo de Backend, no 
 
 ---
 
+## Preview do projeto
+
+![preview](./images/preview.png)
+
 # Sumário
 
 - [Boas vindas ao repositório do projeto Cookmaster!](#boas-vindas-ao-repositório-do-projeto-cookmaster)
@@ -133,6 +137,8 @@ Voce pode usar as ferramentas [Postman](https://www.postman.com/), [Insomnia](ht
 
 Caso haja algum erro nas requisições por falta de informação passada no corpo da requisição, ou informação passada da forma errada, as requisições irão retornar mensagens de erro descritivas de cada erro.
 
+---
+
 ### POST /users
 
 ~~~http
@@ -244,6 +250,8 @@ E o retorno dessa requisição será um a receita cadastrada:
   "preparation": "string"
 }
 ~~~
+
+---
 
 ⚠️ **Este é um projeto que ainda está em desenvolvimento, há espaço para melhorias e novas implementações, ambas serão feitas com o tempo, caso você tenha alguma sugestão, envie-a para mim no meu e-mail *iago.pferreiravr@gmail.com*** ⚠️
 
