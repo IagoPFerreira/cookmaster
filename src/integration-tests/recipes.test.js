@@ -406,3 +406,23 @@ describe('GET /recipes', () => {
     });
   });
 });
+
+describe('GET /recipes/:id', () => {
+  let db;
+
+  before(async () => {
+    const connectionMock = await getConnection();
+
+    db = connectionMock.db('Cookmaster');
+
+    sinon.stub(MongoClient, 'connect').resolves(connectionMock);
+  });
+
+  after(async () => {
+    MongoClient.connect.restore();
+  });
+
+  describe('Casos de falha', () => {});
+
+  describe('Casos de sucesso', () => {});
+});
