@@ -300,5 +300,109 @@ describe('GET /recipes', () => {
     });
   });
 
-  describe('Casos de sucesso', () => {});
+  describe('Casos de sucesso', () => {
+    let token;
+
+    before(async () => {
+      await chai.request(server).post('/users').send({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789',
+      });
+
+      token = await chai
+        .request(server)
+        .post('/login')
+        .send({
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
+          password: '123456789',
+        })
+        .then(({ body }) => body.token);
+      
+      await chai
+        .request(server)
+        .post('/recipes')
+        .set({ authorization: token })
+        .send({
+          name: 'Frango' ,
+          ingredients: 'Frango, sazon',
+          preparation: '10 minutos no forno',
+        });
+    });
+
+    after(async () => {
+      db.collection('users').deleteMany({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      })
+
+      db.collection('recipes').deleteMany({
+        name: 'Frango' ,
+        ingredients: 'Frango, sazon',
+        preparation: '10 minutos no forno',
+      })
+    })
+
+    describe('Quando é possível listar todas as receitas sem estar autenticado', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+          .request(server)
+          .get('/recipes');
+      });
+
+      it('retorna o código de status 200', () => {
+        expect(response).to.have.status(200);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('a propriedade "body" é um array', () => {
+        expect(response.body).to.be.a('array')
+      });
+
+      it('a propriedade "recipe" ter as informações da receita', () => {
+        expect(response.body[0].name).to.be.equal('Frango');
+        expect(response.body[0].ingredients).to.be.equal('Frango, sazon');
+        expect(response.body[0].preparation).to.be.equal('10 minutos no forno');
+        expect(response.body[0]).to.have.property('_id');
+      });
+
+    });
+
+    describe('Quando é possível listar todas as receitas estando autenticado', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+          .request(server)
+          .get('/recipes');
+      });
+
+      it('retorna o código de status 200', () => {
+        expect(response).to.have.status(200);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('a propriedade "recipe" é um array', () => {
+        expect(response.body).to.be.a('array')
+      });
+
+      it('a propriedade "recipe" ter as informações da receita', () => {
+        expect(response.body[0].name).to.be.equal('Frango');
+        expect(response.body[0].ingredients).to.be.equal('Frango, sazon');
+        expect(response.body[0].preparation).to.be.equal('10 minutos no forno');
+        expect(response.body[0]).to.have.property('_id');
+      });
+
+    });
+  });
 });
