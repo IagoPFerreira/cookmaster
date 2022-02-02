@@ -162,6 +162,8 @@ E o retorno dessa requisição será:
 }
 ~~~
 
+---
+
 ### POST /login
 
 ~~~http
@@ -186,6 +188,8 @@ E o retorno dessa requisição será:
 ~~~
 
 Este token será o token de validação de que deverá ser passado para outras requisições
+
+---
 
 ### GET /recipes
 
@@ -220,7 +224,9 @@ E o retorno dessa requisição será um array das receitas cadastradas:
 ]
 ~~~
 
-### POST recipes/:id
+---
+
+### GET recipes/:id
 
 ~~~http
 http://localhost:3000/recipes/61fab004f2a5298b06477e84
