@@ -366,7 +366,7 @@ describe('GET /recipes', () => {
         expect(response.body).to.be.a('array')
       });
 
-      it('a propriedade "recipe" ter as informações da receita', () => {
+      it('o item no array ter as informações da receita', () => {
         expect(response.body[0].name).to.be.equal('Frango');
         expect(response.body[0].ingredients).to.be.equal('Frango, sazon');
         expect(response.body[0].preparation).to.be.equal('10 minutos no forno');
@@ -392,11 +392,11 @@ describe('GET /recipes', () => {
         expect(response).to.be.a('object');
       });
 
-      it('a propriedade "recipe" é um array', () => {
+      it('a propriedade "body" é um array', () => {
         expect(response.body).to.be.a('array')
       });
 
-      it('a propriedade "recipe" ter as informações da receita', () => {
+      it('o item no array ter as informações da receita', () => {
         expect(response.body[0].name).to.be.equal('Frango');
         expect(response.body[0].ingredients).to.be.equal('Frango, sazon');
         expect(response.body[0].preparation).to.be.equal('10 minutos no forno');
@@ -564,7 +564,7 @@ describe('GET /recipes/:id', () => {
       before(async () => {
         response = await chai
           .request(server)
-          .get(`/recipes${recipeId}`);
+          .get(`/recipes/${recipeId}`);
       });
 
       it('retorna o código de status 200', () => {
@@ -575,11 +575,11 @@ describe('GET /recipes/:id', () => {
         expect(response).to.be.a('object');
       });
 
-      it('a propriedade "body" é um array', () => {
-        expect(response.body).to.be.a('array')
+      it('a propriedade "body" é um objeto', () => {
+        expect(response.body).to.be.a('object')
       });
 
-      it('a propriedade "recipe" ter as informações da receita', () => {
+      it('a propriedade "body" ter as informações da receita', () => {
         expect(response.body.name).to.be.equal('Frango');
         expect(response.body.ingredients).to.be.equal('Frango, sazon');
         expect(response.body.preparation).to.be.equal('10 minutos no forno');
@@ -594,7 +594,7 @@ describe('GET /recipes/:id', () => {
       before(async () => {
         response = await chai
           .request(server)
-          .get(`/recipes${recipeId}`);
+          .get(`/recipes/${recipeId}`);
       });
 
       it('retorna o código de status 200', () => {
@@ -605,11 +605,11 @@ describe('GET /recipes/:id', () => {
         expect(response).to.be.a('object');
       });
 
-      it('a propriedade "recipe" é um array', () => {
-        expect(response.body).to.be.a('array')
+      it('a propriedade "body" é um objeto', () => {
+        expect(response.body).to.be.a('object')
       });
 
-      it('a propriedade "recipe" ter as informações da receita', () => {
+      it('a propriedade "body" ter as informações da receita', () => {
         expect(response.body.name).to.be.equal('Frango');
         expect(response.body.ingredients).to.be.equal('Frango, sazon');
         expect(response.body.preparation).to.be.equal('10 minutos no forno');
