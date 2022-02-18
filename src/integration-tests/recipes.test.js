@@ -775,5 +775,88 @@ describe('PUT /recipes/:id', () => {
     });
   });
 
-  describe('Casos de sucesso', () => {});
+  describe('Casos de sucesso', () => {
+
+    let token;
+    let recipeId;
+
+    before(async () => {
+      await chai.request(server).post('/users').send({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789',
+      });
+
+      token = await chai
+        .request(server)
+        .post('/login')
+        .send({
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
+          password: '123456789',
+        })
+        .then(({ body }) => body.token);
+
+      recipeId = await chai
+      .request(server)
+      .post('/recipes')
+      .set({ authorization: token })
+      .send({
+        name: 'Frango',
+        ingredients: 'Frango, sazon',
+        preparation: '10 minutos no forno',
+      })
+      .then(({ body: { recipe } }) => recipe._id);
+    });
+
+    after(async () => {
+      db.collection('users').deleteMany({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      })
+
+      db.collection('recipes').deleteMany({
+        name: 'Frango' ,
+        ingredients: 'Frango, sazon',
+        preparation: '10 minutos no forno',
+      })
+    })
+
+    describe('Quando é possível editar a receita estando autenticado', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+          .request(server)
+          .put(`/recipes/${recipeId}`)
+          .set({ authorization: token })
+          .send({
+            name: 'Frango com sazon',
+            ingredients: 'Frango, sazon',
+            preparation: '10 minutos no forno',
+          });
+      });
+
+      it('retorna o código de status 200', () => {
+        expect(response).to.have.status(200);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('a propriedade "body" é um objeto', () => {
+        expect(response.body).to.be.a('object')
+      });
+
+      it('a propriedade "body" ter as informações da receita', () => {
+        expect(response.body.name).to.be.equal('Frango com sazon');
+        expect(response.body.ingredients).to.be.equal('Frango, sazon');
+        expect(response.body.preparation).to.be.equal('10 minutos no forno');
+        expect(response.body).to.have.property('_id');
+        expect(response.body).to.have.property('userId');
+      });
+    });
+  });
 });
