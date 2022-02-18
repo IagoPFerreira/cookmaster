@@ -20,8 +20,11 @@ const getRecipe = async (id) => {
   return recipe;
 };
 
+const editRecipe = async (id, body) => model.editRecipe(id, body);
+
 module.exports = {
   newRecipe,
   getRecipes,
   getRecipe,
+  editRecipe,
 };
