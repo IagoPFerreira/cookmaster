@@ -636,7 +636,144 @@ describe('PUT /recipes/:id', () => {
     MongoClient.connect.restore();
   });
 
-  describe('Casos de falha', () => {});
+  describe('Casos de falha', () => {
+    let token;
+    let recipeId;
+
+    before(async () => {
+      await chai.request(server).post('/users').send({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789',
+      });
+
+      token = await chai
+        .request(server)
+        .post('/login')
+        .send({
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
+          password: '123456789',
+        })
+        .then(({ body }) => body.token);
+
+        recipeId = await chai
+        .request(server)
+        .post('/recipes')
+        .set({ authorization: token })
+        .send({
+          name: 'Frango' ,
+          ingredients: 'Frango, sazon',
+          preparation: '10 minutos no forno',
+        })
+        .then(({ body: { recipe } }) => recipe._id);
+    });
+
+    after(async () => {
+      db.collection('users').deleteMany({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      })
+    })
+
+    describe('Quando não é passado o token', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .put(`/recipes/${recipeId}`)
+        .send({
+          name: 'Frango' ,
+          ingredients: 'Frango, sazon',
+          preparation: '10 minutos no forno',
+        });
+      });
+
+      it('retorna o código de status 404', () => {
+        expect(response).to.have.status(401);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "missing auth token"', () => {
+        expect(response.body.message).to.be.equal(
+          'missing auth token'
+        );
+      });
+    });
+
+    describe('Quando não é passado um token válido', () => {
+      let response;
+      const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV.eyJfaWQiOiI2MTgzMTA5NDYzNWMzYjdhYWMyZTA3ZjgiLCJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6ImV0ZXNAZW1haWwuY29tIiwicm9sZSI6ImFkbWluIiwidXNlcklkIjoiNjE4MzEwOTQ2MzVjM2I3YWFjMmUwN2Y3IiwiaWF0IjoxNjQ1MTkwODM1LCJleHAiOjE2NDUxOTE3MzV9.krA04NDvT10TuTDe64FohT-bzhaJIbVVDvA2MZTpUlE'
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .put(`/recipes/${recipeId}`)
+        .set({ authorization: fakeToken })
+        .send({
+          name: 'Frango' ,
+          ingredients: 'Frango, sazon',
+          preparation: '10 minutos no forno',
+        });
+      });
+
+      it('retorna o código de status 404', () => {
+        expect(response).to.have.status(401);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "jwt malformed"', () => {
+        expect(response.body.message).to.be.equal(
+          'jwt malformed'
+        );
+      });
+    });
+
+    describe('Quando o id não é um id válido', () => {
+      let response;
+      const id = '61faacccde0dc470d098e74*'
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .get(`/recipes/${id}`);
+      });
+
+      it('retorna o código de status 404', () => {
+        expect(response).to.have.status(404);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "invalid id"', () => {
+        expect(response.body.message).to.be.equal(
+          'invalid id'
+        );
+      });
+    });
+  });
 
   describe('Casos de sucesso', () => {});
 });
