@@ -13,7 +13,7 @@ const newRecipe = async ({ name, ingredients, preparation }) => {
 const getRecipes = async () => model.getRecipes();
 
 const getRecipe = async (id) => {
-  const recipe = await model.getRecipe(id);  
+  const recipe = await model.getRecipe(id);
 
   if (recipe === 'invalid id') return ({ status: 404, message: 'invalid id' });
 
@@ -22,9 +22,16 @@ const getRecipe = async (id) => {
 
 const editRecipe = async (id, body) => model.editRecipe(id, body);
 
+const deleteRecipe = async (id) => {
+  const recipe = await model.deleteRecipe(id);
+
+  return recipe;
+};
+
 module.exports = {
   newRecipe,
   getRecipes,
   getRecipe,
   editRecipe,
+  deleteRecipe,
 };
