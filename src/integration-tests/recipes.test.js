@@ -1089,5 +1089,76 @@ describe('DELETE /recipes/:id', () => {
     });
   });
 
-  describe('Casos de sucesso', () => {});
+  describe('Casos de sucesso', () => {
+    let token;
+    let recipeId;
+
+    before(async () => {
+      await chai.request(server).post('/users').send({
+        name: 'Yarpen Zigrin Sr',
+        email: 'yarpenzigrinsr@anao.com',
+        password: '123456789',
+        role: 'admin'
+      });
+
+      token = await chai
+        .request(server)
+        .post('/login')
+        .send({
+          name: 'Yarpen Zigrin Sr',
+          email: 'yarpenzigrinsr@anao.com',
+          password: '123456789',
+          role: 'admin'
+        })
+        .then(({ body }) => body.token);
+
+      recipeId = await chai
+        .request(server)
+        .post('/recipes')
+        .set({ authorization: token })
+        .send({
+          name: 'Frango',
+          ingredients: 'Frango, sazon',
+          preparation: '10 minutos no forno',
+        })
+        .then(({ body: { recipe } }) => recipe._id);
+    });
+
+    after(async () => {
+      db.collection('users').deleteMany({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      })
+    })
+
+    describe('Quando é possível deletar a receita', () => {
+      let response;
+
+      before(async () => {
+        console.log(recipeId);
+        response = await chai
+          .request(server)
+          .delete(`/recipes/${recipeId}`)
+          .set({ authorization: token })
+          .send({
+            name: 'Frango com sazon',
+            ingredients: 'Frango, sazon',
+            preparation: '10 minutos no forno',
+          });
+      });
+
+      it('retorna o código de status 204', () => {
+        expect(response).to.have.status(204);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('a propriedade "body" é um objeto', () => {
+        expect(response.body).to.be.a('object')
+      });
+    });
+  });
 });
