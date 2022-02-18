@@ -197,6 +197,38 @@ Este token será o token de validação de que deverá ser passado para outras r
 
 ---
 
+### POST /recipes
+
+~~~http
+http://localhost:3000/recipes
+~~~
+
+Esta é uma rota de cadastro de receitas, essa rota espera na cabeça da requisição o token de autorização e no corpo da requisição um JSON com as seguintes chaves:
+
+~~~JSON
+{
+  "name": "string",
+  "ingredients": "string",
+  "preparation": "string"
+}
+~~~
+
+E o retorno dessa requisição será:
+
+~~~JSON
+{
+  "recipe": {
+    "name": "string",
+    "ingredients": "string",
+    "preparation": "string",
+    "userId": "620fb3e2eb521290adb0e745",
+    "_id": "620fb3e2eb521290adb0e746"
+  }
+}
+~~~
+
+---
+
 ### GET /recipes
 
 ~~~http
@@ -240,7 +272,36 @@ http://localhost:3000/recipes/61fab004f2a5298b06477e84
 
 Esta é uma rota de busca de uma receita cadastrada específica no banco de dados, essa rota não espera nada no corpo da requisição, mas espera o `_id` de uma receita específica, como parâmetro de rota.
 
-E o retorno dessa requisição será um a receita cadastrada:
+E o retorno dessa requisição será uma receita cadastrada:
+
+~~~JSON
+{
+  "_id": "61fab004f2a5298b06477e84",
+  "name": "string",
+  "ingredients": "string",
+  "preparation": "string"
+}
+~~~
+
+---
+
+### PUT recipes/:id
+
+~~~http
+http://localhost:3000/recipes/61fab004f2a5298b06477e84
+~~~
+
+Esta é uma rota de edição de uma receita cadastrada específica no banco de dados, essa rota espera na cabeça da requisição o token de autorização, no corpo da requisição as informações à serem alteradas e também espera como parâmetro de rota, o `_id` de uma receita específica.
+
+~~~JSON
+{
+  "name": "Frango com sazon",
+  "ingredients": "Frango, sazon",
+  "preparation": "10 minutos no forno"
+}
+~~~
+
+E o retorno dessa requisição será a receita editada:
 
 ~~~JSON
 {
