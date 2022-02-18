@@ -691,7 +691,7 @@ describe('PUT /recipes/:id', () => {
         });
       });
 
-      it('retorna o código de status 404', () => {
+      it('retorna o código de status 401', () => {
         expect(response).to.have.status(401);
       });
 
@@ -726,7 +726,7 @@ describe('PUT /recipes/:id', () => {
         });
       });
 
-      it('retorna o código de status 404', () => {
+      it('retorna o código de status 401', () => {
         expect(response).to.have.status(401);
       });
 
@@ -817,7 +817,7 @@ describe('PUT /recipes/:id', () => {
       })
 
       db.collection('recipes').deleteMany({
-        name: 'Frango' ,
+        name: 'Frango com sazon' ,
         ingredients: 'Frango, sazon',
         preparation: '10 minutos no forno',
       })
@@ -876,7 +876,218 @@ describe('DELETE /recipes/:id', () => {
     MongoClient.connect.restore();
   });
 
-  describe('Casos de falha', () => {});
+  describe('Casos de falha', () => {
+    let userToken;
+    let adminToken;
+    let recipeId;
+
+    before(async () => {
+      await chai.request(server).post('/users').send({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789',
+      });
+
+      await chai.request(server).post('/users').send({
+        name: 'Yarpen Zigrin Sr',
+        email: 'yarpenzigrinsr@anao.com',
+        password: '123456789',
+        role: 'admin'
+      });
+
+      userToken = await chai
+        .request(server)
+        .post('/login')
+        .send({
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
+          password: '123456789',
+        })
+        .then(({ body }) => body.token);
+
+        adminToken = await chai
+        .request(server)
+        .post('/login')
+        .send({
+          name: 'Yarpen Zigrin Sr',
+          email: 'yarpenzigrinsr@anao.com',
+          password: '123456789',
+        })
+        .then(({ body }) => body.token);
+
+        recipeId = await chai
+        .request(server)
+        .post('/recipes')
+        .set({ authorization: userToken })
+        .send({
+          name: 'Frango' ,
+          ingredients: 'Frango, sazon',
+          preparation: '10 minutos no forno',
+        })
+        .then(({ body: { recipe } }) => recipe._id);
+    });
+
+    after(async () => {
+      db.collection('users').deleteMany({
+        name: 'Yarpen Zigrin',
+        email: 'yarpenzigrin@anao.com',
+        password: '123456789'
+      });
+
+      db.collection('recipes').deleteMany({
+          name: 'Frango' ,
+          ingredients: 'Frango, sazon',
+          preparation: '10 minutos no forno',
+      });
+    })
+
+    describe('Quando não é passado o token', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .delete(`/recipes/${recipeId}`);
+      });
+
+      it('retorna o código de status 401', () => {
+        expect(response).to.have.status(401);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "missing auth token"', () => {
+        expect(response.body.message).to.be.equal(
+          'missing auth token'
+        );
+      });
+    });
+
+    describe('Quando não é passado um token válido', () => {
+      let response;
+      const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV.eyJfaWQiOiI2MTgzMTA5NDYzNWMzYjdhYWMyZTA3ZjgiLCJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6ImV0ZXNAZW1haWwuY29tIiwicm9sZSI6ImFkbWluIiwidXNlcklkIjoiNjE4MzEwOTQ2MzVjM2I3YWFjMmUwN2Y3IiwiaWF0IjoxNjQ1MTkwODM1LCJleHAiOjE2NDUxOTE3MzV9.krA04NDvT10TuTDe64FohT-bzhaJIbVVDvA2MZTpUlE'
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .delete(`/recipes/${recipeId}`)
+        .set({ authorization: fakeToken });
+      });
+
+      it('retorna o código de status 401', () => {
+        expect(response).to.have.status(401);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "jwt malformed"', () => {
+        expect(response.body.message).to.be.equal(
+          'jwt malformed'
+        );
+      });
+    });
+
+    describe('Quando o role não é "admin"', () => {
+      let response;
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .delete(`/recipes/${recipeId}`)
+        .set({ authorization: userToken });
+      });
+
+      it('retorna o código de status 401', () => {
+        expect(response).to.have.status(401);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "only admins can delete recipes"', () => {
+        expect(response.body.message).to.be.equal(
+          'only admins can delete recipes'
+        );
+      });
+    });
+
+    describe('Quando o id não é um id válido', () => {
+      let response;
+      const id = '61faacccde0dc470d098e74*'
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .delete(`/recipes/${id}`)
+        .set({ authorization: adminToken });
+      });
+
+      it('retorna o código de status 404', () => {
+        expect(response).to.have.status(404);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "invalid id"', () => {
+        expect(response.body.message).to.be.equal(
+          'invalid id'
+        );
+      });
+    });
+
+    describe('Quando não existem receitas cadastradas com esse id', () => {
+      let response;
+      const id = '61faacccde0dc470d098e744'
+
+      before(async () => {
+        response = await chai
+        .request(server)
+        .delete(`/recipes/${id}`)
+        .set({ authorization: adminToken });
+      });
+
+      it('retorna o código de status 404', () => {
+        expect(response).to.have.status(404);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "recipe not found"', () => {
+        expect(response.body.message).to.be.equal(
+          'recipe not found'
+        );
+      });
+    });
+  });
 
   describe('Casos de sucesso', () => {});
 });
