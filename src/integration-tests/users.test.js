@@ -30,10 +30,11 @@ describe('POST /users', () => {
       let response;
 
       before(async () => {
-        response = await chai.request(server)
+        response = await chai
+          .request(server)
           .post('/users')
           .send({
-            email: 'teste@teste.com',
+            email: 'yarpenzigrin@anao.com',
             password: '123456789'
           });
       });
@@ -59,10 +60,11 @@ describe('POST /users', () => {
       let response;
 
       before(async () => {
-        response = await chai.request(server)
+        response = await chai
+          .request(server)
           .post('/users')
           .send({
-            name: 'Testador Testante',
+            name: 'Yarpen Zigrin',
             password: '123456789'
           });
       });
@@ -88,11 +90,12 @@ describe('POST /users', () => {
       let response;
 
       before(async () => {
-        response = await chai.request(server)
+        response = await chai
+          .request(server)
           .post('/users')
           .send({
-            name: 'Testador Testante',
-            email: 'testatortestante@',
+            name: 'Yarpen Zigrin',
+            email: 'yarpenzigrin@',
             password: '123456789'
           });
       });
@@ -118,12 +121,12 @@ describe('POST /users', () => {
       let response;
 
       before(async () => {
-        response = await chai.request(server)
+        response = await chai
+          .request(server)
           .post('/users')
           .send({
-            name: 'Testador Testante',
-            email: 'testatortestante@',
-            password: '123456789'
+            name: 'Yarpen Zigrin',
+            email: 'yarpenzigrin@anao.com'
           });
       });
 
@@ -148,27 +151,29 @@ describe('POST /users', () => {
       let response;
 
       before(async () => {
-        await chai.request(server)
+        await chai
+          .request(server)
           .post('/users')
           .send({
-            name: 'Testador Testante',
-            email: 'testatortestante@teste.com',
+            name: 'Yarpen Zigrin',
+            email: 'yarpenzigrin@anao.com',
             password: '123456789'
           });
 
-        response = await chai.request(server)
+        response = await chai
+          .request(server)
           .post('/users')
           .send({
-            name: 'Testador Testante',
-            email: 'testatortestante@teste.com',
+            name: 'Yarpen Zigrin',
+            email: 'yarpenzigrin@anao.com',
             password: '123456789'
           });
       });
 
       after(async () => {
         db.collection('users').deleteMany({
-          name: 'Testador Testante',
-          email: 'testatortestante@teste.com',
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
           password: '123456789'
         })
       })
@@ -196,19 +201,20 @@ describe('POST /users', () => {
       let response;
 
       before(async () => {
-        response = await chai.request(server)
+        response = await chai
+          .request(server)
           .post('/users')
           .send({
-            name: 'Testador Testante',
-            email: 'testatortestante@teste.com',
+            name: 'Yarpen Zigrin',
+            email: 'yarpenzigrin@anao.com',
             password: '123456789'
           });
       });
 
       after(async () => {
         db.collection('users').deleteMany({
-          name: 'Testador Testante',
-          email: 'testatortestante@teste.com',
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
           password: '123456789'
         });
       });
@@ -230,8 +236,8 @@ describe('POST /users', () => {
       });
 
       it('a propriedade "user" ter as informações do usuário', () => {
-        expect(response.body.user.name).to.be.equal('Testador Testante');
-        expect(response.body.user.email).to.be.equal('testatortestante@teste.com');
+        expect(response.body.user.name).to.be.equal('Yarpen Zigrin');
+        expect(response.body.user.email).to.be.equal('yarpenzigrin@anao.com');
         expect(response.body.user).to.have.property('_id');
         expect(response.body.user).to.have.property('role');
       });
