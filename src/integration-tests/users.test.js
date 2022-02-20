@@ -190,7 +190,7 @@ describe('POST /users', () => {
         expect(response.body).to.have.property('message');
       });
 
-      it('a propriedade "message" possui o texto "Invalid entries. Try again."', () => {
+      it('a propriedade "message" possui o texto "Email already registered"', () => {
         expect(response.body.message).to.be.equal('Email already registered');
       });
     });
@@ -265,7 +265,231 @@ describe('POST /users/admin', () => {
     MongoClient.connect.restore();
   });
 
-  describe('Casos de falha', () => {});
+  describe('Casos de falha', () => {
+    describe('Quando não é passado o campo "name"', () => {
+      let response;
+
+      before(async () => {
+        response = await chai.request(server)
+          .post('/users')
+          .send({
+            email: 'teste@teste.com',
+            password: '123456789'
+          });
+      });
+
+      it('retorna o código de status 400', () => {
+        expect(response).to.have.status(400);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "Invalid entries. Try again."', () => {
+        expect(response.body.message).to.be.equal('Invalid entries. Try again.');
+      });
+    });
+
+    describe('Quando não é passado o campo "email"', () => {
+      let response;
+
+      before(async () => {
+        response = await chai.request(server)
+          .post('/users')
+          .send({
+            name: 'Yarpen Zigrin',
+            password: '123456789'
+          });
+      });
+
+      it('retorna o código de status 400', () => {
+        expect(response).to.have.status(400);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "Invalid entries. Try again."', () => {
+        expect(response.body.message).to.be.equal('Invalid entries. Try again.');
+      });
+    });
+
+    describe('Quando não é passado um e-mail válido no campo "email"', () => {
+      let response;
+
+      before(async () => {
+        response = await chai.request(server)
+          .post('/users')
+          .send({
+            name: 'Yarpen Zigrin',
+            email: 'testatortestante@',
+            password: '123456789'
+          });
+      });
+
+      it('retorna o código de status 400', () => {
+        expect(response).to.have.status(400);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "Invalid entries. Try again."', () => {
+        expect(response.body.message).to.be.equal('Invalid entries. Try again.');
+      });
+    });
+
+    describe('Quando não é passado o campo "password"', () => {
+      let response;
+
+      before(async () => {
+        response = await chai.request(server)
+          .post('/users')
+          .send({
+            name: 'Yarpen Zigrin',
+            email: 'testatortestante@',
+            password: '123456789'
+          });
+      });
+
+      it('retorna o código de status 400', () => {
+        expect(response).to.have.status(400);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "Invalid entries. Try again."', () => {
+        expect(response.body.message).to.be.equal('Invalid entries. Try again.');
+      });
+    });
+
+    describe('Quando o e-mail passado não é único', () => {
+      let response;
+
+      before(async () => {
+        await chai.request(server)
+          .post('/users')
+          .send({
+            name: 'Yarpen Zigrin',
+            email: 'yarpenzigrin@anao.com',
+            password: '123456789'
+          });
+
+        response = await chai.request(server)
+          .post('/users')
+          .send({
+            name: 'Yarpen Zigrin',
+            email: 'yarpenzigrin@anao.com',
+            password: '123456789'
+          });
+      });
+
+      after(async () => {
+        db.collection('users').deleteMany({
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
+          password: '123456789'
+        })
+      })
+
+      it('retorna o código de status 409', () => {
+        expect(response).to.have.status(409);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "Email already registered"', () => {
+        expect(response.body.message).to.be.equal('Email already registered');
+      });
+    });
+
+    describe('Quando o "role", de quem está tentando criar um novo "admin", não é "admin"', () => {
+      let response;
+      let token;
+
+      before(async () => {
+        await chai
+          .request(server)
+          .post('/users')
+          .send({
+            name: 'Yarpen Zigrin',
+            email: 'yarpenzigrin@anao.com',
+            password: '123456789',
+          });
+  
+        token = await chai
+          .request(server)
+          .post('/login')
+          .send({
+            name: 'Yarpen Zigrin',
+            email: 'yarpenzigrin@anao.com',
+            password: '123456789',
+          })
+          .then(({ body }) => body.token);
+
+          response = await chai
+            .request(server)
+            .post('/users/admin')
+            .set({ authorization: token })
+            .send({
+              name: 'Yarpen Zigrin Jr',
+              email: 'yarpenzigrinjr@anao.com',
+              password: '123456789',
+            });
+      });
+
+      after(async () => {
+        db.collection('users').deleteMany({
+          name: 'Yarpen Zigrin',
+          email: 'yarpenzigrin@anao.com',
+          password: '123456789',
+        })
+      })
+
+      it('retorna o código de status 403', () => {
+        expect(response).to.have.status(403);
+      });
+
+      it('retorna um objeto', () => {
+        expect(response).to.be.a('object');
+      });
+
+      it('o objeto possui a propriedade "message"', () => {
+        expect(response.body).to.have.property('message');
+      });
+
+      it('a propriedade "message" possui o texto "Only admins can register new admins"', () => {
+        expect(response.body.message).to.be.equal('Only admins can register new admins');
+      });
+    });
+  });
 
   describe('Casos de sucesso', () => {});
 });
