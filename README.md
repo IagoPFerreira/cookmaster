@@ -20,12 +20,12 @@ Esse projeto foi desenvolvido como projeto avaliativo no módulo de Backend, no 
   - [GET recipes/:id](#GET-recipes/:id)
   - [PUT recipes/:id](#PUT-recipes/:id)
   - [DELETE recipes/:id](#DELETE-recipes/:id)
+  <!-- - [](#)
   - [](#)
   - [](#)
   - [](#)
   - [](#)
-  - [](#)
-  - [](#)
+  - [](#) -->
 - [Link para o portfolio](#Link-para-o-portfolio)
 
 ---
